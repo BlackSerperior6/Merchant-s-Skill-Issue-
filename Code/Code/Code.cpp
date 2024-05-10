@@ -70,7 +70,7 @@ int main(cli::array<System::String ^> ^args)
 
 					int anotheButtonIndex = -1;
 
-					for (int i = 0; i < 6 && ChosenButton == nullptr; i++)
+					for (int i = 0; i < 6 && anotheButtonIndex == -1; i++)
 					{
 						SFMLButton& button = Buttons[i];
 
