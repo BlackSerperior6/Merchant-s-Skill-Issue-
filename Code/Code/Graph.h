@@ -600,8 +600,8 @@ private:
 		Transform rotation;
 		rotation.rotate(angle, boundaryForVertex2);
 
-		Vector2f pointB = Vector2f(boundaryForVertex2.x - 10, boundaryForVertex2.y + 20);
-		Vector2f pointC = Vector2f(boundaryForVertex2.x + 10, boundaryForVertex2.y + 20);
+		Vector2f pointB = Vector2f(boundaryForVertex2.x - 10, boundaryForVertex2.y + 12);
+		Vector2f pointC = Vector2f(boundaryForVertex2.x + 10, boundaryForVertex2.y + 12);
 
 		triangleArrow[0] = boundaryForVertex2;
 		triangleArrow[1] = rotation.transformPoint(pointB);
