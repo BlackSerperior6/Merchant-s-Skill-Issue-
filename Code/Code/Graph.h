@@ -5,6 +5,8 @@
 #include <string>
 #include <queue>
 
+#define PI 3.14159265
+
 #include "SFML/Graphics.hpp"
 
 using namespace std;
@@ -553,16 +555,18 @@ private:
 		if (weight == 0 || weight == -1)
 			return;
 
-		Vector2f boundaryForVertex1 = 
-			CalculateBoundaryPoint(Vertex2.visualVertex.getPosition(), Vertex1.visualVertex.getPosition(), 22);
+		Vector2f boundaryForVertex1 =
+			CalculateBoundaryPoint(Vertex2.visualVertex.getPosition(), Vertex1.visualVertex.getPosition(), 22)
+			+ Vector2f(VertexRadius, VertexRadius);
 
 		Vector2f boundaryForVertex2 =
-			CalculateBoundaryPoint(Vertex1.visualVertex.getPosition(), Vertex2.visualVertex.getPosition(), 22);
+			CalculateBoundaryPoint(Vertex1.visualVertex.getPosition(), Vertex2.visualVertex.getPosition(), 22)
+			+ Vector2f(VertexRadius, VertexRadius);
 
 		VertexArray Edge(Lines, 2);
 
-		Edge[0] = boundaryForVertex1 + Vector2f(VertexRadius, VertexRadius);
-		Edge[1] = boundaryForVertex2 + Vector2f(VertexRadius, VertexRadius);
+		Edge[0] = boundaryForVertex1;
+		Edge[1] = boundaryForVertex2;
 
 		Edge[0].color = Color::Black;
 		Edge[1].color = Color::Black;
@@ -582,12 +586,54 @@ private:
 		text.setFillColor(Color::Black);
 		text.setOutlineColor(Color::White);
 
-		FloatRect textRect = text.getLocalBounds();//центрую текст
+		FloatRect textRect = text.getLocalBounds();
 		text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 		text.setPosition(weightTextPosition);
 
+		VertexArray triangleArrow(Triangles, 3);
+
+		double angle = GetAngle(boundaryForVertex2, boundaryForVertex1, Vector2f(boundaryForVertex2.x, boundaryForVertex2.y + 20));
+
+		if (boundaryForVertex1.x > boundaryForVertex2.x)
+			angle *= -1;
+
+		Transform rotation;
+		rotation.rotate(angle, boundaryForVertex2);
+
+		Vector2f pointB = Vector2f(boundaryForVertex2.x - 10, boundaryForVertex2.y + 20);
+		Vector2f pointC = Vector2f(boundaryForVertex2.x + 10, boundaryForVertex2.y + 20);
+
+		triangleArrow[0] = boundaryForVertex2;
+		triangleArrow[1] = rotation.transformPoint(pointB);
+		triangleArrow[2] = rotation.transformPoint(pointC);
+
+		triangleArrow[0].color = Color::Black;
+		triangleArrow[1].color = Color::Black;
+		triangleArrow[2].color = Color::Black;
+
 		window.draw(text);
+		window.draw(triangleArrow);
 		window.draw(Edge);
+	}
+
+	double GetAngle(Vector2f &A, Vector2f &B, Vector2f &C)
+	{
+		//A - boundary2
+		//B - boundary1
+		//C - boundaty2, но сдвиг по y на 20 вниз
+
+		double AB = GetSideLenght(A, B);
+
+		double AC = GetSideLenght(A, C);
+
+		double BC = GetSideLenght(B, C);
+
+		return acos((AB * AB + AC * AC - BC * BC) / (2 * AB * AC)) * 180/PI;
+	}
+
+	double GetSideLenght(Vector2f &point1, Vector2f &point2)
+	{
+		return sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2));
 	}
 
 	Vector2f CalculateBoundaryPoint(Vector2f point1, Vector2f point2, double minus)
@@ -599,7 +645,7 @@ private:
 		return Vector2f(point1.x + Lenght * cos(a), point1.y + Lenght * sin(a));
 	}
 
-	double GetEdgeLenght(Vector2f point1, Vector2f point2)
+	double GetEdgeLenght(Vector2f &point1, Vector2f &point2)
 	{
 		double DistanceX = point2.x - point1.x;
 		double DistanceY = point2.y - point1.y;

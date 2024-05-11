@@ -117,8 +117,6 @@ int main(cli::array<System::String ^> ^args)
 							if (choosenElements.size() == 2)
 							{
 								mainGraph.AddEdge(choosenElements[0], choosenElements[1], rand() % 100);
-								mode = WorkMode::None;
-								chosenButtonIndex = -1;
 								choosenElements.clear();
 							}
 
@@ -128,9 +126,6 @@ int main(cli::array<System::String ^> ^args)
 							if (choosenElements.size() == 2)
 							{
 								mainGraph.RemoveEdge(choosenElements[0], choosenElements[1]);
-
-								mode = WorkMode::None;
-								chosenButtonIndex = -1;
 								choosenElements.clear();
 							}
 
