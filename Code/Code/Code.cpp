@@ -116,11 +116,7 @@ int main(cli::array<System::String ^> ^args)
 
 							if (choosenElements.size() == 2)
 							{
-								int value;
-
-								cin >> value;
-
-								mainGraph.AddEdge(choosenElements[0], choosenElements[1], value);
+								mainGraph.AddEdge(choosenElements[0], choosenElements[1], rand() % 100);
 								choosenElements.clear();
 							}
 

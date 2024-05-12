@@ -291,15 +291,16 @@ public:
 			for (int j = 0; j < AdjMatrix.size(); j++)
 			{
 				if (i == j)
+				{
 					BufferMatrix[i][j].isNonExistantFromStart = true;
+					BufferMatrix[i][j].value = 0;
+				}
 				else
 					BufferMatrix[i][j].value = AdjMatrix[i][j];
 			}
 		}
 
 		int counter = 0;
-
-		PrintTable(BufferMatrix);
 
 		while (buffer.size() != VertexList.size())
 		{
@@ -320,7 +321,7 @@ public:
 
 				int minValue = startMinValue;
 
-				for (int j = 1; j < BufferMatrix.size(); j++)
+				for (int j = 0; j < BufferMatrix.size(); j++)
 				{
 					if (!BufferMatrix[i][j].isNonExistantFromStart && !BufferMatrix[i][j].isNonExistantFromReduction)
 					{
@@ -329,8 +330,11 @@ public:
 					}
 				}
 
+				cout << minValue << endl;
 				MinElementsOfRows.push_back(minValue);
 			}
+
+			cout << "AAAAAAAAAA" << endl;
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
@@ -358,7 +362,7 @@ public:
 
 				int minValue = startMinValue;
 
-				for (int j = 1; j < BufferMatrix.size(); j++)
+				for (int j = 0; j < BufferMatrix.size(); j++)
 				{
 					if (!BufferMatrix[j][i].isNonExistantFromStart && !BufferMatrix[j][i].isNonExistantFromReduction)
 					{
@@ -366,6 +370,8 @@ public:
 							minValue = BufferMatrix[j][i].value;
 					}	
 				}
+
+				cout << minValue << endl;
 
 				MinElemntsOfColumns.push_back(minValue);
 			}
@@ -377,8 +383,6 @@ public:
 					if (BufferMatrix[j][i].value != 0)
 						BufferMatrix[j][i].value -= MinElemntsOfColumns[i];
 			}
-
-			PrintTable(BufferMatrix);
 
 			vector<ZeroElement> ZeroElements;
 
