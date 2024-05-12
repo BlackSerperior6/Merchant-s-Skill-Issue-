@@ -14,6 +14,8 @@ using namespace sf;
 
 const int VertexRadius = 20;
 
+const int startMinValue = 10000;
+
 struct  ElemntOfMatrix
 {
 	int value;
@@ -251,6 +253,9 @@ public:
 
 	bool CanSolveMerchantProblem()
 	{
+		if (VertexList.size() < 3)
+			return false;
+
 		bool result = true;
 
 		for (int i = 0; i < AdjMatrix.size() && result; i++)
@@ -292,6 +297,10 @@ public:
 			}
 		}
 
+		int counter = 0;
+
+		PrintTable(BufferMatrix);
+
 		while (buffer.size() != VertexList.size())
 		{
 			vector<int> MinElementsOfRows;
@@ -309,11 +318,11 @@ public:
 					continue;
 				}	
 
-				int minValue = i == 0 ? BufferMatrix[i][1].value : BufferMatrix[i][0].value;
+				int minValue = startMinValue;
 
 				for (int j = 1; j < BufferMatrix.size(); j++)
 				{
-					if (!BufferMatrix[i][j].isNonExistantFromStart)
+					if (!BufferMatrix[i][j].isNonExistantFromStart && !BufferMatrix[i][j].isNonExistantFromReduction)
 					{
 						if (minValue > BufferMatrix[i][j].value)
 							minValue = BufferMatrix[i][j].value;
@@ -347,11 +356,11 @@ public:
 					continue;
 				}
 
-				int minValue = i == 0 ? BufferMatrix[1][i].value : BufferMatrix[0][i].value;
+				int minValue = startMinValue;
 
 				for (int j = 1; j < BufferMatrix.size(); j++)
 				{
-					if (!BufferMatrix[j][i].isNonExistantFromStart)
+					if (!BufferMatrix[j][i].isNonExistantFromStart && !BufferMatrix[j][i].isNonExistantFromReduction)
 					{
 						if (minValue > BufferMatrix[j][i].value)
 							minValue = BufferMatrix[j][i].value;
@@ -369,6 +378,8 @@ public:
 						BufferMatrix[j][i].value -= MinElemntsOfColumns[i];
 			}
 
+			PrintTable(BufferMatrix);
+
 			vector<ZeroElement> ZeroElements;
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
@@ -378,12 +389,13 @@ public:
 					if (BufferMatrix[i][j].value == 0 && !BufferMatrix[i][j].isNonExistantFromStart && 
 						!BufferMatrix[i][j].isNonExistantFromReduction)
 					{
-						int minRow = BufferMatrix[i][j].value;
-						int minColumn = BufferMatrix[i][j].value;
+						int minRow = startMinValue;
+						int minColumn = startMinValue;
 
 						for (int uj = 0; uj < BufferMatrix.size(); uj++)
 						{
-							if (!BufferMatrix[i][uj].isNonExistantFromStart && !BufferMatrix[i][uj].isNonExistantFromReduction)
+							if (!BufferMatrix[i][uj].isNonExistantFromStart && 
+								!BufferMatrix[i][uj].isNonExistantFromReduction && j != uj)
 							{
 								if (minRow > BufferMatrix[i][uj].value)
 									minRow = BufferMatrix[i][uj].value;
@@ -392,12 +404,19 @@ public:
 
 						for (int ui = 0; ui < BufferMatrix.size(); ui++)
 						{
-							if (!BufferMatrix[ui][j].isNonExistantFromStart && !BufferMatrix[ui][j].isNonExistantFromReduction)
+							if (!BufferMatrix[ui][j].isNonExistantFromStart && 
+								!BufferMatrix[ui][j].isNonExistantFromReduction && ui != i)
 							{
 								if (minColumn > BufferMatrix[ui][j].value)
 									minColumn = BufferMatrix[ui][j].value;
 							}
 						}
+
+						if (minRow == startMinValue)
+							minRow = 0;
+
+						if (minColumn == startMinValue)
+							minColumn = 0;
 
 						ZeroElement element(i, j, minColumn + minRow);
 						ZeroElements.push_back(element);
@@ -406,12 +425,12 @@ public:
 			}
 
 			if (ZeroElements.size() == 0)
-			{
 				cout << "FUCK" << endl;
-				return result;
-			}
 
 			ZeroElement maxElement = ZeroElements[0];
+
+			for (int i = 0; i < ZeroElements.size(); i++)
+				cout << ZeroElements[i].Row << " " << ZeroElements[i].Column << " " << ZeroElements[i].Value << endl;
 
 			for (int i = 0; i < ZeroElements.size(); i++)
 			{
@@ -440,9 +459,61 @@ public:
 				BufferMatrix[i][maxElement.Column].isNonExistantFromReduction = true;
 				BufferMatrix[i][maxElement.Column].value = 0;
 			}
+
+			BufferMatrix[maxElement.Row][maxElement.Column].isNonExistantFromReduction = true;
+			BufferMatrix[maxElement.Column][maxElement.Row].isNonExistantFromReduction = true;
+
+			BufferMatrix[maxElement.Row][maxElement.Column].value = 0;
+			BufferMatrix[maxElement.Column][maxElement.Row].value = 0;
+
+			cout << counter++ << endl;
 		}
 
 		return result;
+	}
+
+	void PrintTable(vector<vector<ElemntOfMatrix>> to_print)
+	{
+		if (VertexList.size() == 0)
+		{
+			cout << "���� ����" << endl;
+			return;
+		}
+
+		int greatestLenght = GetWidestLenght();
+
+		for (int i = 0; i < greatestLenght; i++)
+			cout << "_";
+
+		cout << "|";
+
+		for (int i = 0; i < VertexList.size(); i++)
+		{
+			PrintWithSpaces(VertexList[i].Data, greatestLenght);
+
+			cout << "|";
+		}
+
+		PrintDivideLine(VertexList.size() * greatestLenght * 2);
+
+		for (int i = 0; i < AdjMatrix.size(); i++)
+		{
+			PrintWithSpaces(VertexList[i].Data, greatestLenght);
+
+			cout << "|";
+
+			for (int j = 0; j < AdjMatrix.size(); j++)
+			{
+				if (to_print[i][j].isNonExistantFromReduction || to_print[i][j].isNonExistantFromStart)
+					PrintWithSpaces("m", greatestLenght);
+				else
+					PrintWithSpaces(to_string(to_print[i][j].value), greatestLenght);
+				
+				cout << "|";
+			}
+
+			PrintDivideLine(VertexList.size() * greatestLenght * 2);
+		}
 	}
 
 	void AddEdge(T vertex1, T vertex2, int weight)

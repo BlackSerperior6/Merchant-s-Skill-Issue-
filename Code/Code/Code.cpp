@@ -116,7 +116,11 @@ int main(cli::array<System::String ^> ^args)
 
 							if (choosenElements.size() == 2)
 							{
-								mainGraph.AddEdge(choosenElements[0], choosenElements[1], rand() % 100);
+								int value;
+
+								cin >> value;
+
+								mainGraph.AddEdge(choosenElements[0], choosenElements[1], value);
 								choosenElements.clear();
 							}
 
@@ -181,6 +185,9 @@ int main(cli::array<System::String ^> ^args)
 								for (int i = 0; i < mainGraph.GetVertexCount(); i++)
 								{
 									result += " -> " + solution[current];
+
+									totalDistance += mainGraph.GetWeight(current, solution[current]);
+
 									current = solution[current];
 								}
 
@@ -198,6 +205,8 @@ int main(cli::array<System::String ^> ^args)
 								visualText.setCharacterSize(30);
 
 								RenderWindow ResultWindow(VideoMode(result.length() * 30, 158), "Result!");
+
+								cout << totalDistance << endl;
 
 								while (ResultWindow.isOpen())
 								{
