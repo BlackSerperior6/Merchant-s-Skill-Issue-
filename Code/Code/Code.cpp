@@ -64,7 +64,7 @@ int main(cli::array<System::String ^> ^args)
 
 				if (ev.key.code == Mouse::Left) 
 				{
-					if (mode == MoveVertex && choosenElements.size() == 0 ||
+					if ((mode == MoveVertex  || mode == MerchantProblem) && choosenElements.size() == 0 ||
 						((mode == CreateEdge || mode == DestroyEdge) && choosenElements.size() < 2))
 						mainGraph.TrySetNewChoosen(mousePosition, choosenElements);
 
@@ -131,6 +131,94 @@ int main(cli::array<System::String ^> ^args)
 
 							break;
 						case MerchantProblem:
+
+							if (choosenElements.size() == 0)
+								break;
+
+							if (!mainGraph.CanSolveMerchantProblem())
+							{
+								sf::Text errMessage;
+
+								errMessage.setString("Невозможно решить задачу при таких условиях!");
+								errMessage.setFillColor(Color::Black);
+								errMessage.setOutlineColor(Color::White);
+
+								Font font;
+								font.loadFromFile("CyrilicOld.TTF");
+
+								errMessage.setFont(font);
+								errMessage.setPosition(50, 30);
+								errMessage.setCharacterSize(30);
+
+								RenderWindow ErrorWindow(VideoMode(1051, 158), "Error!");
+
+								while (ErrorWindow.isOpen())
+								{
+									ErrorWindow.clear(Color(255, 125, 24));
+
+									Event ev;
+
+									while (ErrorWindow.pollEvent(ev))
+									{
+										if (ev.type == Event::Closed)
+											ErrorWindow.close();
+									}
+
+									ErrorWindow.draw(errMessage);
+
+									ErrorWindow.display();
+								}	
+							}
+							else
+							{
+								map<string, string> solution = mainGraph.SolveMerchantProblem();
+
+								int totalDistance = 0;
+								string current = choosenElements[0];
+
+								string result = current;
+
+								for (int i = 0; i < mainGraph.GetVertexCount(); i++)
+								{
+									result += " -> " + solution[current];
+									current = solution[current];
+								}
+
+								sf::Text visualText;
+
+								visualText.setString(result);
+								visualText.setFillColor(Color::Black);
+								visualText.setOutlineColor(Color::White);
+
+								Font font;
+								font.loadFromFile("CyrilicOld.TTF");
+
+								visualText.setFont(font);
+								visualText.setPosition(50, 30);
+								visualText.setCharacterSize(30);
+
+								RenderWindow ResultWindow(VideoMode(result.length() * 30, 158), "Result!");
+
+								while (ResultWindow.isOpen())
+								{
+									ResultWindow.clear(Color(255, 125, 24));
+
+									Event ev;
+
+									while (ResultWindow.pollEvent(ev))
+									{
+										if (ev.type == Event::Closed)
+											ResultWindow.close();
+									}
+
+									ResultWindow.draw(visualText);
+
+									ResultWindow.display();
+								}
+							}
+
+							choosenElements.clear();
+
 							break;
 						case None:
 							break;

@@ -99,7 +99,7 @@ public:
 
 		for (int i = 0; i < VertexList.size(); i++)
 		{
-			PrintWithSpaces(to_string(VertexList[i].Data), greatestLenght);
+			PrintWithSpaces(VertexList[i].Data, greatestLenght);
 
 			cout << "|";
 		}
@@ -108,7 +108,7 @@ public:
 
 		for (int i = 0; i < AdjMatrix.size(); i++)
 		{
-			PrintWithSpaces(to_string(VertexList[i].Data), greatestLenght);
+			PrintWithSpaces(VertexList[i].Data, greatestLenght);
 
 			cout << "|";
 
@@ -249,49 +249,67 @@ public:
 		element->visualVertex.setPosition(position.x - VertexRadius, position.y - VertexRadius);
 	}
 
-	/*vector<pair<T, T>> SolverMerchantProblem(T startVertex)
+	bool CanSolveMerchantProblem()
 	{
-		vector<pair<T, T>> result;
+		bool result = true;
 
-		while (result.size() != VertexList.size())
+		for (int i = 0; i < AdjMatrix.size() && result; i++)
 		{
-			vector<vector<ElemntOfMatrix>> BufferMatrix = vector<vector<ElemntOfMatrix>>
-				(AdjMatrix.size(), vector<ElemntOfMatrix>(AdjMatrix.size()));
+			for (int j = 0; j < AdjMatrix.size() && result; j++)
+				result = i == j || (AdjMatrix[i][j] != 0 && AdjMatrix[i][j] != -1);
+		}
 
-			for (int i = 0; i < AdjMatrix.size(); i++)
+		return result;
+	}
+
+	int GetVertexCount()
+	{
+		return VertexList.size();
+	}
+
+	T GetFirstVertex()
+	{
+		return VertexList[0].Data;
+	}
+
+	map<T, T> SolveMerchantProblem()
+	{
+		vector<pair<T, T>> buffer;
+		map<T, T> result;
+
+		vector<vector<ElemntOfMatrix>> BufferMatrix = vector<vector<ElemntOfMatrix>>
+			(AdjMatrix.size(), vector<ElemntOfMatrix>(AdjMatrix.size()));
+
+		//В задачу коммивояжера пути могут не существовать только на главной диагонали таблицы смежности
+		for (int i = 0; i < AdjMatrix.size(); i++)
+		{
+			for (int j = 0; j < AdjMatrix.size(); j++)
 			{
-				for (int j = 0; j < AdjMatrix.size(); j++)
-				{
+				if (i == j)
+					BufferMatrix[i][j].isNonExistantFromStart = true;
+				else
 					BufferMatrix[i][j].value = AdjMatrix[i][j];
-
-					if (BufferMatrix[i][j].value == 0 || BufferMatrix[i][j].value == -1)
-						BufferMatrix[i][j].isNonExistantFromStart = true;
-				}
 			}
+		}
 
+		while (buffer.size() != VertexList.size())
+		{
 			vector<int> MinElementsOfRows;
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
 				bool should_skip = false;
 
-				for (int u = 0; u < result.size() && !should_skip; u++)
-					should_skip = GetVertexIndex[result[u].first] == i;
+				for (int u = 0; u < buffer.size() && !should_skip; u++)
+					should_skip = GetVertexIndex(buffer[u].first) == i;
 
 				if (should_skip)
-					continue;
-
-				int minValue = BufferMatrix[i][0].value;
-
-				bool flag = false;
-
-				for (int j = 0; j < BufferMatrix.size() && !flag; j++)
 				{
-					flag = !BufferMatrix[i][j].isNonExistantFromStart;
+					MinElementsOfRows.push_back(0);
+					continue;
+				}	
 
-					if (!flag)
-						minValue = BufferMatrix[i][j + 1].value;
-				}
+				int minValue = i == 0 ? BufferMatrix[i][1].value : BufferMatrix[i][0].value;
 
 				for (int j = 1; j < BufferMatrix.size(); j++)
 				{
@@ -302,13 +320,16 @@ public:
 					}
 				}
 
-				MinElementsOfRows[i] = minValue;
+				MinElementsOfRows.push_back(minValue);
 			}
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
 				for (int j = 0; j < BufferMatrix.size(); j++)
-					BufferMatrix[i][j].value -= MinElementsOfRows[i];
+				{
+					if (BufferMatrix[i][j].value != 0)
+						BufferMatrix[i][j].value -= MinElementsOfRows[i];
+				}		
 			}
 
 			vector<int> MinElemntsOfColumns;
@@ -317,38 +338,35 @@ public:
 			{
 				bool should_skip = false;
 
-				for (int u = 0; u < result.size() && !should_skip; u++)
-					should_skip = GetVertexIndex[result[u].second] == i;
+				for (int u = 0; u < buffer.size() && !should_skip; u++)
+					should_skip = GetVertexIndex(buffer[u].second) == i;
 
 				if (should_skip)
-					continue;
-
-				int minValue = BufferMatrix[0][i].value;
-
-				for (int j = 0; j < BufferMatrix.size() && !flag; j++)
 				{
-					flag = !BufferMatrix[j][i].isNonExistantFromStart;
-
-					if (!flag)
-						minValue = BufferMatrix[j + 1][i].value;
+					MinElemntsOfColumns.push_back(0);
+					continue;
 				}
+
+				int minValue = i == 0 ? BufferMatrix[1][i].value : BufferMatrix[0][i].value;
 
 				for (int j = 1; j < BufferMatrix.size(); j++)
 				{
 					if (!BufferMatrix[j][i].isNonExistantFromStart)
 					{
-						if (minValue > BufferMatrix[j][i])
+						if (minValue > BufferMatrix[j][i].value)
 							minValue = BufferMatrix[j][i].value;
 					}	
 				}
 
-				MinElemntsOfColumns[i] = minValue;
+				MinElemntsOfColumns.push_back(minValue);
 			}
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
 				for (int j = 0; j < BufferMatrix.size(); j++)
-					BufferMatrix[j][i] -= MinElemntsOfColumns[i];
+
+					if (BufferMatrix[j][i].value != 0)
+						BufferMatrix[j][i].value -= MinElemntsOfColumns[i];
 			}
 
 			vector<ZeroElement> ZeroElements;
@@ -357,33 +375,40 @@ public:
 			{
 				for (int j = 0; j < BufferMatrix.size(); j++)
 				{
-					if (BufferMatrix[i][j].value == 0 && !BufferMatrix[i][j].isNonExistantFromStart && !BufferMatrix[i][j].isNonExistantFromReduction)
+					if (BufferMatrix[i][j].value == 0 && !BufferMatrix[i][j].isNonExistantFromStart && 
+						!BufferMatrix[i][j].isNonExistantFromReduction)
 					{
-						int maxRow = BufferMatrix[i][j].value;
-						int maxColum = BufferMatrix[i][j].value;
+						int minRow = BufferMatrix[i][j].value;
+						int minColumn = BufferMatrix[i][j].value;
 
-						for (int uj = j + 1; uj < BufferMatrix.size(); uj++)
+						for (int uj = 0; uj < BufferMatrix.size(); uj++)
 						{
-							if (!BufferMatrix[i][uj].isNonExistantFromStart)
+							if (!BufferMatrix[i][uj].isNonExistantFromStart && !BufferMatrix[i][uj].isNonExistantFromReduction)
 							{
-								if (maxRow < BufferMatrix[i][uj])
-									maxRow = BufferMatrix[i][uj];
+								if (minRow > BufferMatrix[i][uj].value)
+									minRow = BufferMatrix[i][uj].value;
 							}	
 						}
 
-						for (int ui = i + 1; ui < BufferMatrix.size(); ui++)
+						for (int ui = 0; ui < BufferMatrix.size(); ui++)
 						{
-							if (!BufferMatrix[ui][j].isNonExistantFromStart)
+							if (!BufferMatrix[ui][j].isNonExistantFromStart && !BufferMatrix[ui][j].isNonExistantFromReduction)
 							{
-								if (maxColum < BufferMatrix[ui][j])
-									maxColum = BufferMatrix[ui][j];
+								if (minColumn > BufferMatrix[ui][j].value)
+									minColumn = BufferMatrix[ui][j].value;
 							}
 						}
 
-						ZeroElement elemet(i, j, maxColum + maxRow);
-						ZeroElements.push_back(elemet);
+						ZeroElement element(i, j, minColumn + minRow);
+						ZeroElements.push_back(element);
 					}
 				}
+			}
+
+			if (ZeroElements.size() == 0)
+			{
+				cout << "FUCK" << endl;
+				return result;
 			}
 
 			ZeroElement maxElement = ZeroElements[0];
@@ -394,20 +419,31 @@ public:
 					maxElement = ZeroElements[i];
 			}
 
-			result.push_back(pair<T, T>(VertexList[maxElement.Row], VertexList[maxElement.Column]));
+			pair<T, T> to_add;
+
+			to_add.first = VertexList[maxElement.Row].Data;
+			to_add.second = VertexList[maxElement.Column].Data;
+
+			buffer.push_back(to_add);
+
+			result[VertexList[maxElement.Row].Data] = VertexList[maxElement.Column].Data;
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
+			{
 				BufferMatrix[maxElement.Row][i].isNonExistantFromReduction = true;
+				BufferMatrix[maxElement.Row][i].value = 0;
+			}
+				
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
+			{
 				BufferMatrix[i][maxElement.Column].isNonExistantFromReduction = true;
-
-			BufferMatrix[maxElement.Row][maxElement.Column].isNonExistantFromReduction = true;
-			BufferMatrix[maxElement.Column][maxElement.Row].isNonExistantFromReduction = true;
+				BufferMatrix[i][maxElement.Column].value = 0;
+			}
 		}
 
 		return result;
-	}*/
+	}
 
 	void AddEdge(T vertex1, T vertex2, int weight)
 	{
@@ -676,7 +712,7 @@ private:
 
 		for (int i = 0; i < VertexList.size(); i++)
 		{
-			string element = to_string(VertexList[i].Data);
+			string element = VertexList[i].Data;
 
 			if (result < element.length())
 				result = element.length();
