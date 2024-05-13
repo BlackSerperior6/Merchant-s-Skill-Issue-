@@ -300,25 +300,24 @@ public:
 			}
 		}
 
+		cout << "Starting table: " << endl << endl;
+
+		PrintTable(BufferMatrix);
+
 		int counter = 0;
 
 		while (buffer.size() != VertexList.size())
 		{
+			cout << "----------------------" << endl << endl;;
+
+			PrintTable(BufferMatrix);
+
 			vector<int> MinElementsOfRows;
+
+			cout << endl <<"Row minimum elements:" << endl;
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
-				bool should_skip = false;
-
-				for (int u = 0; u < buffer.size() && !should_skip; u++)
-					should_skip = GetVertexIndex(buffer[u].first) == i;
-
-				if (should_skip)
-				{
-					MinElementsOfRows.push_back(0);
-					continue;
-				}	
-
 				int minValue = startMinValue;
 
 				for (int j = 0; j < BufferMatrix.size(); j++)
@@ -330,11 +329,14 @@ public:
 					}
 				}
 
-				cout << minValue << endl;
+				if (minValue == startMinValue)
+					minValue = 0;
+
+				cout << i << " : " << minValue << endl;
 				MinElementsOfRows.push_back(minValue);
 			}
 
-			cout << "AAAAAAAAAA" << endl;
+			cout << "Matrix after row reduction:" << endl << endl;;
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
@@ -345,21 +347,14 @@ public:
 				}		
 			}
 
+			PrintTable(BufferMatrix);
+
 			vector<int> MinElemntsOfColumns;
+
+			cout << endl << endl << "Minimum column elements:" << endl;
 
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
-				bool should_skip = false;
-
-				for (int u = 0; u < buffer.size() && !should_skip; u++)
-					should_skip = GetVertexIndex(buffer[u].second) == i;
-
-				if (should_skip)
-				{
-					MinElemntsOfColumns.push_back(0);
-					continue;
-				}
-
 				int minValue = startMinValue;
 
 				for (int j = 0; j < BufferMatrix.size(); j++)
@@ -371,7 +366,10 @@ public:
 					}	
 				}
 
-				cout << minValue << endl;
+				if (minValue == startMinValue)
+					minValue = 0;
+
+				cout << i << " : " << minValue << endl;
 
 				MinElemntsOfColumns.push_back(minValue);
 			}
@@ -383,6 +381,10 @@ public:
 					if (BufferMatrix[j][i].value != 0)
 						BufferMatrix[j][i].value -= MinElemntsOfColumns[i];
 			}
+
+			cout << endl << "Matrix after second reduction: " << endl << endl;
+
+			PrintTable(BufferMatrix);
 
 			vector<ZeroElement> ZeroElements;
 
@@ -429,9 +431,45 @@ public:
 			}
 
 			if (ZeroElements.size() == 0)
-				cout << "FUCK" << endl;
+			{
+				cout << "No more zero elements, finding obvious routes" << endl;
+
+				for (int i = 0; i < VertexList.size(); i++)
+				{
+					bool flag = false;
+
+					if (result.find(VertexList[i].Data) == result.end())
+					{
+						for (int j = 0; j < VertexList.size() && !flag; j++)
+						{
+							if (i == j)
+								continue;
+
+							bool does_exist = false;
+
+							for (auto& elm : result)
+							{
+								if (elm.second == VertexList[j].Data)
+								{
+									does_exist = true;
+									break;
+								}
+							}
+
+							flag = !does_exist;
+
+							if (flag)
+								result[VertexList[i].Data] = VertexList[j].Data;
+						}
+					}
+				}
+
+				return result;
+			}
 
 			ZeroElement maxElement = ZeroElements[0];
+
+			cout << "Zero elements:" << endl;
 
 			for (int i = 0; i < ZeroElements.size(); i++)
 				cout << ZeroElements[i].Row << " " << ZeroElements[i].Column << " " << ZeroElements[i].Value << endl;
@@ -447,7 +485,18 @@ public:
 			to_add.first = VertexList[maxElement.Row].Data;
 			to_add.second = VertexList[maxElement.Column].Data;
 
+			for (int i = 0; i < buffer.size(); i++)
+			{
+				if (to_add.first == buffer[i].second)
+				{
+					BufferMatrix[GetVertexIndex(to_add.second)][GetVertexIndex(buffer[i].first)].isNonExistantFromReduction = true;
+					BufferMatrix[GetVertexIndex(to_add.second)][GetVertexIndex(buffer[i].first)].value = 0;
+				}
+			}
+
 			buffer.push_back(to_add);
+
+			cout << "Result pair: " << to_add.first << " " << to_add.second << endl;
 
 			result[VertexList[maxElement.Row].Data] = VertexList[maxElement.Column].Data;
 
@@ -470,7 +519,9 @@ public:
 			BufferMatrix[maxElement.Row][maxElement.Column].value = 0;
 			BufferMatrix[maxElement.Column][maxElement.Row].value = 0;
 
-			cout << counter++ << endl;
+			cout << "Matrix after full reduction: " << endl << endl;
+
+			PrintTable(BufferMatrix);
 		}
 
 		return result;
