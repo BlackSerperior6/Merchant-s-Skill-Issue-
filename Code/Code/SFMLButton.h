@@ -21,7 +21,7 @@ public:
 
 		window.draw(Shape);
 
-		Text line;
+		sf::Text line;
 		Font font;
 
 		font.loadFromFile("CyrilicOld.TTF");

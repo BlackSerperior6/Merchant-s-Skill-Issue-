@@ -8,6 +8,123 @@ using namespace std;
 
 int counter = 1;
 
+void CenterText(sf::Text &text, RectangleShape &shape)
+{
+	FloatRect bounds(text.getLocalBounds());
+	Vector2f box(shape.getSize());
+
+	text.setOrigin((bounds.width - box.x) / 2 + bounds.left, (bounds.height - box.y) / 2 + bounds.top);
+}
+
+int GetValueFromDialog()
+{
+	RenderWindow dialogWindow(VideoMode(800, 135), "Enter Data");
+
+	string currentText = "";
+
+	Font font;
+	font.loadFromFile("CyrilicOld.TTF");
+
+	while (dialogWindow.isOpen())
+	{
+		dialogWindow.clear(Color(255, 125, 24));
+
+		RectangleShape TextBox(Vector2f(521, 31));
+
+		TextBox.setPosition(120, 10);
+
+		TextBox.setOutlineColor(Color::Black);
+
+		sf::Text text;
+
+		text.setString(currentText.length() == 0 ? "Введите длину пути" : currentText + "_");
+		text.setFillColor(Color::Black);
+		text.setOutlineColor(Color::White);
+		text.setCharacterSize(15);
+		text.setPosition(TextBox.getPosition());
+		text.setFont(font);
+
+		RectangleShape ExitButton(Vector2f(241, 41));
+
+		ExitButton.setPosition(250, 60);
+		ExitButton.setOutlineColor(Color::Black);
+
+		sf::Text OkText;
+
+		OkText.setString("Ok");
+		OkText.setFillColor(Color::Black);
+		OkText.setOutlineColor(Color::White);
+		OkText.setCharacterSize(20);
+		OkText.setPosition(ExitButton.getPosition());
+		OkText.setFont(font);
+
+		CenterText(OkText, ExitButton);
+		CenterText(text, TextBox);
+
+		dialogWindow.draw(TextBox);
+		dialogWindow.draw(text);
+		dialogWindow.draw(ExitButton);
+		dialogWindow.draw(OkText);
+
+		Uint32 uniText;
+
+		Event ev;
+		char chr;
+
+		while (dialogWindow.pollEvent(ev))
+		{
+			switch (ev.type)
+			{
+			case Event::Closed:
+				dialogWindow.close();
+				currentText = "";
+				break;
+
+			case Event::MouseButtonPressed:
+
+				if (ev.key.code == Mouse::Left)
+				{
+					Vector2i mousePosition = Mouse::getPosition(dialogWindow);
+
+					if (ExitButton.getGlobalBounds().contains(mousePosition.x, mousePosition.y))
+						dialogWindow.close();
+				}
+
+				break;
+
+
+			case Event::TextEntered:
+
+				uniText = ev.text.unicode;
+
+				if (uniText == 0x8 && currentText.length() != 0)
+					currentText.erase(currentText.size() - 1);
+				else if (currentText.length() < 2)
+				{
+					chr = static_cast<wchar_t>(uniText);
+
+					if (!isdigit(chr))
+						break;
+
+					currentText += static_cast<wchar_t>(ev.text.unicode);
+				}
+
+				break;
+
+			default:
+				break;
+			}
+		}
+
+		dialogWindow.display();
+	}
+
+	if (currentText == "")
+		return -1;
+
+	return stoi(currentText);
+}
+
 int main(cli::array<System::String ^> ^args)
 {
 	setlocale(LC_ALL, "RUS");
@@ -94,7 +211,7 @@ int main(cli::array<System::String ^> ^args)
 
 							if (functionalCanvas.getGlobalBounds().contains(mousePosition.x, mousePosition.y)) 
 							{
-								content = "A" + to_string(counter++);
+								content = "Г" + to_string(counter++);
 								mainGraph.AddVertex(content, mousePosition);
 							}
 							
@@ -116,7 +233,7 @@ int main(cli::array<System::String ^> ^args)
 
 							if (choosenElements.size() == 2)
 							{
-								mainGraph.AddEdge(choosenElements[0], choosenElements[1], rand() % 100);
+								mainGraph.AddEdge(choosenElements[0], choosenElements[1], GetValueFromDialog());
 								choosenElements.clear();
 							}
 
@@ -189,7 +306,6 @@ int main(cli::array<System::String ^> ^args)
 
 								sf::Text visualText;
 
-								visualText.setString(result);
 								visualText.setFillColor(Color::Black);
 								visualText.setOutlineColor(Color::White);
 
@@ -202,6 +318,8 @@ int main(cli::array<System::String ^> ^args)
 
 								RenderWindow ResultWindow(VideoMode(result.length() * 30, 158), "Result!");
 
+								visualText.setString(result + "\n\n" + "Длина пути: " + to_string(totalDistance));
+								
 								cout << totalDistance << endl;
 
 								while (ResultWindow.isOpen())
