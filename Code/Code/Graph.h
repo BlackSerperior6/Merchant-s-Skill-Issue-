@@ -196,6 +196,9 @@ public:
 	//Метод проверки возможности решения коммивояжера
 	bool CanSolveMerchantProblem()
 	{
+		if (VertexList.size() <= 1)
+			return false;
+
 		bool result = true;
 
 		//Условие - граф полный (пути есть между всеми городами)
