@@ -107,97 +107,8 @@ public:
 			RemoveVertex(item);
 	}
 
-	void PrintAsTablet() 
-	{
-		if (VertexList.size() == 0)
-		{
-			cout << "���� ����" << endl;
-			return;	 
-		}
-
-		int greatestLenght = GetWidestLenght();
-
-		for (int i = 0; i < greatestLenght; i++)
-			cout << "_";
-
-		cout << "|";
-
-		for (int i = 0; i < VertexList.size(); i++)
-		{
-			PrintWithSpaces(VertexList[i].Data, greatestLenght);
-
-			cout << "|";
-		}
-
-		PrintDivideLine(VertexList.size() * greatestLenght * 2);
-
-		for (int i = 0; i < AdjMatrix.size(); i++)
-		{
-			PrintWithSpaces(VertexList[i].Data, greatestLenght);
-
-			cout << "|";
-
-			for (int j = 0; j < AdjMatrix.size(); j++)
-			{
-				PrintWithSpaces(to_string(AdjMatrix[i][j]), greatestLenght);
-				cout << "|";
-			}
-
-			PrintDivideLine(VertexList.size() * greatestLenght * 2);
-		}
-	}
-
-	void DepthRead(T startVertex)
-	{
-		if (GetVertexIndex(startVertex) == -1)
-		{
-			cout << "����� ������� ���" << endl;
-			return;
-		}
-
-		bool* visitedVertexes = new bool[VertexList.size()];
-
-		for (int i = 0; i < VertexList.size(); i++)
-			visitedVertexes[i] = false;
-
-		DepthHelper(startVertex, visitedVertexes);
-
-		delete[] visitedVertexes;
-	}
-
-	void WidthRead(T startVertex)
-	{
-		if (GetVertexIndex(startVertex) == -1)
-		{
-			cout << "����� ������� ���" << endl;
-			return;
-		}
-
-		bool* visitedVertexes = new bool[VertexList.size()];
-
-		queue<T> queueOfVertexes;
-
-		for (int i = 0; i < VertexList.size(); i++)
-			visitedVertexes[i] = false;
-
-		WidthHelper(startVertex, visitedVertexes, queueOfVertexes);
-
-		delete[] visitedVertexes;
-	}
-
 	void AddVertex(T vertex, Vector2i position)
 	{
-		bool flag = false;
-
-		for (int i = 0; i < VertexList.size() && !flag; i++)
-			flag = VertexList[i].Data == vertex;
-			
-		if (flag)
-		{
-			cout << "����� ������� ��� ���� ���� ��� ���������� ������� � ������ ������������" << endl;
-			return;
-		}
-
 		int oldSize = VertexList.size();
 
 		GraphElement<T> elm;
@@ -290,11 +201,6 @@ public:
 	int GetVertexCount()
 	{
 		return VertexList.size();
-	}
-
-	T GetFirstVertex()
-	{
-		return VertexList[0].Data;
 	}
 
 	map<T, T> SolveMerchantProblem()
@@ -602,6 +508,54 @@ public:
 		return result;
 	}
 
+	void AddEdge(T vertex1, T vertex2, int weight)
+	{
+		if (weight <= 0)
+			return;
+
+		int vertex1Index = GetVertexIndex(vertex1);
+		int vertex2Index = GetVertexIndex(vertex2);
+
+		AdjMatrix[vertex1Index][vertex2Index] = weight;
+
+		if (AdjMatrix[vertex2Index][vertex1Index] == 0)
+			AdjMatrix[vertex2Index][vertex1Index] = -1;
+	}
+
+	void RemoveEdge(T vertex1, T vertex2)
+	{
+		int vertex1Index = GetVertexIndex(vertex1);
+		int vertex2Index = GetVertexIndex(vertex2);
+
+		if (AdjMatrix[vertex2Index][vertex1Index] != -1)
+			AdjMatrix[vertex1Index][vertex2Index] = -1;
+		else
+		{
+			AdjMatrix[vertex1Index][vertex2Index] = 0;
+			AdjMatrix[vertex2Index][vertex1Index] = 0;
+		}		
+	}
+
+	int GetWeight(T vertex1, T vertex2)
+	{
+		int v1index = GetVertexIndex(vertex1);
+		int v2index = GetVertexIndex(vertex2);
+
+		return AdjMatrix[v1index][v2index];;
+	}
+
+	void Clear()
+	{
+		VertexList.clear();
+		AdjMatrix.clear();
+	}
+
+private:
+
+	vector<GraphElement<T>> VertexList;
+
+	vector<vector<int>> AdjMatrix;
+
 	void PrintTable(vector<vector<int>> to_print)
 	{
 		if (VertexList.size() == 0)
@@ -638,7 +592,7 @@ public:
 					PrintWithSpaces("m", greatestLenght);
 				else
 					PrintWithSpaces(to_string(to_print[i][j]), greatestLenght);
-				
+
 				cout << "|";
 			}
 
@@ -646,78 +600,9 @@ public:
 		}
 	}
 
-	void AddEdge(T vertex1, T vertex2, int weight)
-	{
-		if (weight <= 0)
-			return;
-
-		int vertex1Index = GetVertexIndex(vertex1);
-		int vertex2Index = GetVertexIndex(vertex2);
-
-		AdjMatrix[vertex1Index][vertex2Index] = weight;
-
-		if (AdjMatrix[vertex2Index][vertex1Index] == 0)
-			AdjMatrix[vertex2Index][vertex1Index] = -1;
-	}
-
-	void RemoveEdge(T vertex1, T vertex2)
-	{
-		int vertex1Index = GetVertexIndex(vertex1);
-		int vertex2Index = GetVertexIndex(vertex2);
-
-		if (AdjMatrix[vertex2Index][vertex1Index] != -1)
-			AdjMatrix[vertex1Index][vertex2Index] = -1;
-		else
-		{
-			AdjMatrix[vertex1Index][vertex2Index] = 0;
-			AdjMatrix[vertex2Index][vertex1Index] = 0;
-		}		
-	}
-
-	int GetWeight(T vertex1, T vertex2)
-	{
-		int v1index = GetVertexIndex(vertex1);
-		int v2index = GetVertexIndex(vertex2);
-
-		if (v1index == -1 || v2index == -1)
-		{
-			cout << "������ ��� ����� ������ �� ����������" << endl;
-			return -1;
-		}
-
-		int result = -1;
-
-		if (AdjMatrix[v1index][v2index] == 0 || AdjMatrix[v1index][v2index] == -1)
-		{
-			if (AdjMatrix[v2index][v1index] != 0)
-			{
-				cout << "��� ������, ������ ����� �� ���������� � ������� ������ �������" << endl;
-				result = AdjMatrix[v2index][v1index];
-			}	
-		}
-		else
-			result = AdjMatrix[v1index][v2index];
-
-		return result;
-	}
-
-	void Clear()
-	{
-		VertexList.clear();
-		AdjMatrix.clear();
-	}
-
-private:
-
 	void RemoveVertex(T vertex)
 	{
 		int vIndex = GetVertexIndex(vertex);
-
-		if (vIndex == -1)
-		{
-			cout << "����� ������� ���!" << endl;
-			return;
-		}
 
 		vector<GraphElement<T>> VertexBuffer;
 
@@ -893,10 +778,6 @@ private:
 		return sqrt(DistanceX * DistanceX + DistanceY * DistanceY);
 	}
 
-	vector<GraphElement<T>> VertexList;
-
-	vector<vector<int>> AdjMatrix;
-
 	int GetVertexIndex(T vertex)
 	{
 		int result = -1;
@@ -936,70 +817,6 @@ private:
 		return result;
 	}
 
-	vector<T> GetNbr(T vertex)
-	{
-		vector<T> nbrs;
-
-		int vindex = GetVertexIndex(vertex);
-
-		if (vindex != -1)
-		{
-			for (int i = 0; i < VertexList.size(); i++)
-			{
-				if (AdjMatrix[vindex][i] != 0 && AdjMatrix[vindex][i] != -1)
-					nbrs.push_back(VertexList[i].Data);
-			}
-		}
-
-		return nbrs;
-	}
-
-	void DepthHelper(T vertex, bool* visitedVertexes)
-	{
-		cout << "�������: " << vertex << " ���� ����������!" << endl;
-
-		visitedVertexes[GetVertexIndex(vertex)] = true;
-
-		vector<T> neighbors = GetNbr(vertex);
-
-		for (int i = 0; i < neighbors.size(); i++)
-		{
-			if (!visitedVertexes[GetVertexIndex(neighbors[i])])
-				DepthHelper(neighbors[i], visitedVertexes);
-		}
-	}
-
-	void WidthHelper(T vertex, bool* visitedVertexes, queue<T> &queueOfVertexes) 
-	{
-		int vertIndex = GetVertexIndex(vertex);
-
-		if (!visitedVertexes[vertIndex])
-		{
-			queueOfVertexes.push(vertex);
-			cout << "�������: " << vertex << " ���������� " << endl;
-			visitedVertexes[vertIndex] = true;
-		}
-
-		vector<T> ngbr = GetNbr(vertex);
-
-		queueOfVertexes.pop();
-
-		for (int i = 0; i < ngbr.size(); i++)
-		{
-			int currentVertex = ngbr[i];
-
-			if (!visitedVertexes[GetVertexIndex(currentVertex)])
-			{
-				queueOfVertexes.push(currentVertex);
-				visitedVertexes[GetVertexIndex(currentVertex)] = true;
-				cout << "�������" << currentVertex << " ���� ����������" << endl;
-			}
-		}
-
-		if (!queueOfVertexes.empty())
-			WidthHelper(queueOfVertexes.front(), visitedVertexes, queueOfVertexes);
-	}
-
 	void PrintWithSpaces(string element, int maxLenght)
 	{
 		cout << element;
@@ -1008,7 +825,7 @@ private:
 			cout << " ";
 	}
 
-	void PrintDivideLine(int Lenght) 
+	void PrintDivideLine(int Lenght)
 	{
 		cout << endl;
 
