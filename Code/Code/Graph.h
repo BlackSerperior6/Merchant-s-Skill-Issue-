@@ -30,6 +30,38 @@ struct ZeroElement
 		Column = column;
 		Value = value;
 	}
+
+	void operator=(ZeroElement &other) 
+	{
+		Row = other.Row;
+		Column = other.Column;
+		Value = other.Value;
+	}
+};
+
+template<typename T>
+struct TurnBackPoint
+{
+	vector<vector<int>> Matrix;
+
+	ZeroElement zero_element;
+
+	map<T, T> RecordedPath;
+
+	vector<pair<T, T>> Buffer;
+
+	int Counter;
+
+	TurnBackPoint() {}
+
+	TurnBackPoint(vector<vector<int>> &matrix, ZeroElement &zeroElm, map<T, T> &recordedPath, int counter, vector<pair<T, T>>& buffer) 
+	{
+		Matrix = matrix;
+		zero_element = zeroElm;
+		RecordedPath = recordedPath;
+		Counter = counter;
+		Buffer = buffer;
+	}
 };
 
 template<typename T>
@@ -280,6 +312,8 @@ public:
 				BufferMatrix[i][j] = i == j ? -1 : AdjMatrix[i][j];
 		}
 
+		vector<TurnBackPoint<T>> TurnBackPoints;
+
 		cout << "Starting table: " << endl << endl;
 
 		PrintTable(BufferMatrix);
@@ -303,9 +337,6 @@ public:
 					if (BufferMatrix[i][j] >= 0 && minValue > BufferMatrix[i][j])
 						minValue = BufferMatrix[i][j];
 				}
-
-				if (minValue == startMinValue)
-					minValue = 0;
 
 				cout << i << " : " << minValue << endl;
 				MinElementsOfRows.push_back(minValue);
@@ -338,9 +369,6 @@ public:
 						minValue = BufferMatrix[j][i];
 				}
 
-				if (minValue == startMinValue)
-					minValue = 0;
-
 				cout << i << " : " << minValue << endl;
 
 				MinElemntsOfColumns.push_back(minValue);
@@ -350,7 +378,7 @@ public:
 			{
 				for (int j = 0; j < BufferMatrix.size(); j++)
 
-					if (BufferMatrix[j][i] != 0)
+					if (BufferMatrix[j][i] > 0)
 						BufferMatrix[j][i] -= MinElemntsOfColumns[i];
 			}
 
@@ -386,12 +414,6 @@ public:
 									minColumn = BufferMatrix[ui][j];
 							}
 						}
-
-						if (minRow == startMinValue)
-							minRow = 0;
-
-						if (minColumn == startMinValue)
-							minColumn = 0;
 
 						ZeroElement element(i, j, minColumn + minRow);
 						ZeroElements.push_back(element);
@@ -432,56 +454,149 @@ public:
 						}
 					}
 				}
-
-				return result;
 			}
-
-			ZeroElement maxElement = ZeroElements[0];
-
-			cout << "Zero elements:" << endl;
-
-			for (int i = 0; i < ZeroElements.size(); i++)
-				cout << ZeroElements[i].Row << " " << ZeroElements[i].Column << " " << ZeroElements[i].Value << endl;
-
-			for (int i = 0; i < ZeroElements.size(); i++)
+			else
 			{
-				if (maxElement.Value < ZeroElements[i].Value)
-					maxElement = ZeroElements[i];
+				int maxValue = -1;
+				vector<ZeroElement> maxElements;
+
+				cout << "Zero elements:" << endl;
+
+				for (int i = 0; i < ZeroElements.size(); i++)
+					cout << ZeroElements[i].Row << " " << ZeroElements[i].Column << " " << ZeroElements[i].Value << endl;
+
+				for (int i = 0; i < ZeroElements.size(); i++)
+				{
+					if (maxValue < ZeroElements[i].Value)
+					{
+						maxElements.clear();
+
+						maxElements.push_back(ZeroElements[i]);
+
+						maxValue = ZeroElements[i].Value;
+					}
+					else if (maxValue == ZeroElements[i].Value)
+						maxElements.push_back(ZeroElements[i]);
+				}
+
+				if (maxElements.size() > 1)
+				{
+					cout << "More than one max value zero elements found, creating a turn back point for each but not the first one!" << endl;
+
+					for (int i = 1; i < maxElements.size(); i++)
+						TurnBackPoints.push_back(TurnBackPoint<T>(BufferMatrix, maxElements[i], result, v, buffer));
+				}
+
+				ZeroElement maxElement = maxElements[0];
+
+				pair<T, T> to_add;
+
+				to_add.first = VertexList[maxElement.Row].Data;
+				to_add.second = VertexList[maxElement.Column].Data;
+
+				for (int i = 0; i < buffer.size(); i++)
+				{
+					if (to_add.first == buffer[i].second)
+						BufferMatrix[GetVertexIndex(to_add.second)][GetVertexIndex(buffer[i].first)] = -1;
+				}
+
+				buffer.push_back(to_add);
+
+				cout << "Result pair: " << to_add.first << " " << to_add.second << endl;
+
+				result[VertexList[maxElement.Row].Data] = VertexList[maxElement.Column].Data;
+
+				for (int i = 0; i < BufferMatrix.size(); i++)
+					BufferMatrix[maxElement.Row][i] = -1;
+
+
+				for (int i = 0; i < BufferMatrix.size(); i++)
+					BufferMatrix[i][maxElement.Column] = -1;
+
+				BufferMatrix[maxElement.Row][maxElement.Column] = -1;
+				BufferMatrix[maxElement.Column][maxElement.Row] = -1;
+
+				BufferMatrix[maxElement.Row][maxElement.Column] = -1;
+				BufferMatrix[maxElement.Column][maxElement.Row] = -1;
+
+				cout << "Matrix after full reduction: " << endl << endl;
+
+				PrintTable(BufferMatrix);
 			}
 
-			pair<T, T> to_add;
-
-			to_add.first = VertexList[maxElement.Row].Data;
-			to_add.second = VertexList[maxElement.Column].Data;
-
-			for (int i = 0; i < buffer.size(); i++)
+			if (v == VertexList.size() - 1)
 			{
-				if (to_add.first == buffer[i].second)
-					BufferMatrix[GetVertexIndex(to_add.second)][GetVertexIndex(buffer[i].first)] = -1;
-			}
+				if (PathIsBad(result))
+				{
+					cout << "Path is found but deemed bad, returning to one of the turn back points!" << endl << endl;
 
-			buffer.push_back(to_add);
+					TurnBackPoint<T>& point = TurnBackPoints[TurnBackPoints.size() - 1];
 
-			cout << "Result pair: " << to_add.first << " " << to_add.second << endl;
+					BufferMatrix = point.Matrix;
+					result = point.RecordedPath;
+					buffer = point.Buffer;
+					ZeroElement chosenElement = point.zero_element;
+					v = point.Counter;
 
-			result[VertexList[maxElement.Row].Data] = VertexList[maxElement.Column].Data;
+					pair<T, T> to_add2;
 
-			for (int i = 0; i < BufferMatrix.size(); i++)
-				BufferMatrix[maxElement.Row][i] = -1;
-				
+					to_add2.first = VertexList[chosenElement.Row].Data;
+					to_add2.second = VertexList[chosenElement.Column].Data;
 
-			for (int i = 0; i < BufferMatrix.size(); i++)
-				BufferMatrix[i][maxElement.Column] = -1;
+					for (int i = 0; i < buffer.size(); i++)
+					{
+						if (to_add2.first == buffer[i].second)
+							BufferMatrix[GetVertexIndex(to_add2.second)][GetVertexIndex(buffer[i].first)] = -1;
+					}
 
-			BufferMatrix[maxElement.Row][maxElement.Column] = -1;
-			BufferMatrix[maxElement.Column][maxElement.Row] = -1;
+					buffer.push_back(to_add2);
 
-			BufferMatrix[maxElement.Row][maxElement.Column] = -1;
-			BufferMatrix[maxElement.Column][maxElement.Row] = -1;
+					cout << "Result pair: " << to_add2.first << " " << to_add2.second << endl;
 
-			cout << "Matrix after full reduction: " << endl << endl;
+					result[VertexList[chosenElement.Row].Data] = VertexList[chosenElement.Column].Data;
 
-			PrintTable(BufferMatrix);
+					for (int i = 0; i < BufferMatrix.size(); i++)
+						BufferMatrix[chosenElement.Row][i] = -1;
+
+
+					for (int i = 0; i < BufferMatrix.size(); i++)
+						BufferMatrix[i][chosenElement.Column] = -1;
+
+					BufferMatrix[chosenElement.Row][chosenElement.Column] = -1;
+					BufferMatrix[chosenElement.Column][chosenElement.Row] = -1;
+
+					BufferMatrix[chosenElement.Row][chosenElement.Column] = -1;
+					BufferMatrix[chosenElement.Column][chosenElement.Row] = -1;
+
+					TurnBackPoints.pop_back();
+
+					cout << "Matrix after full reduction: " << endl << endl;
+
+					PrintTable(BufferMatrix);
+				}
+				else
+					cout << "Path is found and deemed good!" << endl;
+			}	
+		}
+
+		return result;
+	}
+
+	bool PathIsBad(map<T, T> &path) 
+	{
+		vector<T> metPoints;
+
+		T current = VertexList[0].Data;
+
+		bool result = false;
+
+		for (int i = 0; i < VertexList.size() - 1 && !result; i++)
+		{
+			for (int j = 0; j < metPoints.size() && !result; j++)
+				result = metPoints[j] == current;
+
+			metPoints.push_back(current);
+			current = path[current];
 		}
 
 		return result;
