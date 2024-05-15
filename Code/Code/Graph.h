@@ -5,22 +5,22 @@
 #include <string>
 #include <queue>
 
-#define PI 3.14159265
+#define PI 3.14159265 // Константа, выражающая собой число Pi
 
 #include "SFML/Graphics.hpp"
 
 using namespace std;
 using namespace sf;
 
-const int VertexRadius = 20;
+const int VertexRadius = 20; //Радиус вершины графа
 
-const int startMinValue = 10000;
+const int startMinValue = 10000; //Недостижимый минимум
 
-struct ZeroElement
+struct ZeroElement //Структура, олицетворяющая собой нулевой элемент
 {
-	int Row;
-	int Column;
-	int Value;
+	int Row; //Ряд жлемента
+	int Column; //Столбец элемента
+	int Value; //Оценка элемента
 
 	ZeroElement() {};
 
@@ -40,17 +40,17 @@ struct ZeroElement
 };
 
 template<typename T>
-struct TurnBackPoint
+struct TurnBackPoint //Структура точки возврата
 {
-	vector<vector<int>> Matrix;
+	vector<vector<int>> Matrix; //Матрица графа на тот момент
 
-	ZeroElement zero_element;
+	ZeroElement zero_element; //Нулевой элемент, который будем использовать
 
-	map<T, T> RecordedPath;
+	map<T, T> RecordedPath; //Путь на тот момент
 
-	vector<pair<T, T>> Buffer;
+	vector<pair<T, T>> Buffer; //Буффер на тот момент
 
-	int Counter;
+	int Counter; //Счетчик на тот момент
 
 	TurnBackPoint() {}
 
@@ -65,11 +65,11 @@ struct TurnBackPoint
 };
 
 template<typename T>
-struct GraphElement
+struct GraphElement //Структура элемента графа
 {
-	CircleShape visualVertex;
+	CircleShape visualVertex; //Визуальная часть элемента графа
 	
-	T Data;
+	T Data; //Фактические данные
 };
 
 template <typename T>
@@ -77,25 +77,25 @@ class Graph
 {
 public:
 
-	void DrawGraph(RenderWindow &window, vector<string> &choosenElements)
+	void DrawGraph(RenderWindow &window, vector<string> &choosenElements) //Метод рисования графа
 	{
 
 		for (int i = 0; i < VertexList.size(); i++)
-			DrawVertex(window, VertexList[i], choosenElements);
+			DrawVertex(window, VertexList[i], choosenElements); //Рисуем вершины
 
 		for (int i = 0; i < AdjMatrix.size(); i++)
 		{
 			for (int j = 0; j < AdjMatrix.size(); j++)
-				DrawEdge(window, VertexList[i], VertexList[j], AdjMatrix[i][j]);	
+				DrawEdge(window, VertexList[i], VertexList[j], AdjMatrix[i][j]); //Рисуем грани
 		}
 	}
 
-	void TryRemoveVertexByCoordinates(Vector2i coords)
+	void TryRemoveVertexByCoordinates(Vector2i coords) //Метод удаления вершины по координатам
 	{
 		T item;
 		bool flag = false;
 
-		for (int i = 0; i < VertexList.size() && !flag; i++)
+		for (int i = 0; i < VertexList.size() && !flag; i++) //Находим вершину по координатам
 		{
 			flag = VertexList[i].visualVertex.getGlobalBounds().contains(coords.x, coords.y);
 
@@ -103,16 +103,17 @@ public:
 				item = VertexList[i].Data;
 		}
 
-		if (flag)
+		if (flag) //Удаляем, если нашли
 			RemoveVertex(item);
 	}
 
-	void AddVertex(T vertex, Vector2i position)
+	void AddVertex(T vertex, Vector2i position) //Метод добавления вершины, принимает данные и позицию
 	{
 		int oldSize = VertexList.size();
 
 		GraphElement<T> elm;
 		
+		//Задавания данных новому элементу графа
 		elm.Data = vertex;
 		elm.visualVertex.setRadius(VertexRadius);
 		elm.visualVertex.setPosition(position.x - VertexRadius, position.y - VertexRadius);
@@ -120,6 +121,7 @@ public:
 		elm.visualVertex.setFillColor(Color::White);
 		elm.visualVertex.setOutlineThickness(2);
 
+		//Добавление
 		VertexList.push_back(elm);	
 		
 		int currentSize = VertexList.size();
@@ -128,6 +130,7 @@ public:
 
 		AdjMatrix.clear();
 
+		//Создание колонци и строки для нового элемента графа
 		AdjMatrix = vector<vector<int>>(currentSize, vector<int>(currentSize));
 
 		for (int i = 0; i < oldSize; i++)
@@ -143,7 +146,7 @@ public:
 		}
 	}
 
-	void TrySetNewChoosen(Vector2i coords, vector<T> &listChoosen) 
+	void TrySetNewChoosen(Vector2i coords, vector<T> &listChoosen) //По координатам пытаемся определить выбранный пользователем элемент
 	{
 		bool flag = false;
 
@@ -163,32 +166,39 @@ public:
 
 		flag = false;
 
+		//Если нашли, то проверяем, не выбран ли уже элемент
 		for (int i = 0; i < listChoosen.size() && !flag; i++)
 			flag = listChoosen[i] == choosenData;
 
 		if (flag)
 			return;
 
+		//Если не выбран, то выбираем
 		listChoosen.push_back(choosenData);
 	}
 
+	//Метод сдвига вершины
 	void MoveVertex(T data, Vector2i position) 
 	{
 		GraphElement<T>* element = nullptr;
 
+		//Находим элемент по заданым данным
 		for (int i = 0; i < VertexList.size() && element == nullptr; i++)
 		{
 			if (VertexList[i].Data == data)
 				element = &VertexList[i];
 		}
 
+		//Сдивгаем
 		element->visualVertex.setPosition(position.x - VertexRadius, position.y - VertexRadius);
 	}
 
+	//Метод проверки возможности решения коммивояжера
 	bool CanSolveMerchantProblem()
 	{
 		bool result = true;
 
+		//Условие - граф полный (пути есть между всеми городами)
 		for (int i = 0; i < AdjMatrix.size() && result; i++)
 		{
 			for (int j = 0; j < AdjMatrix.size() && result; j++)
@@ -198,11 +208,13 @@ public:
 		return result;
 	}
 
+	//Возвращает кол-во вершин
 	int GetVertexCount()
 	{
 		return VertexList.size();
 	}
 
+	//Метод для решения задачи коммивояжера
 	map<T, T> SolveMerchantProblem()
 	{
 		vector<pair<T, T>> buffer;
@@ -211,7 +223,7 @@ public:
 		vector<vector<int>> BufferMatrix = vector<vector<int>>
 			(AdjMatrix.size(), vector<int>(AdjMatrix.size()));
 
-		//В задачу коммивояжера пути могут не существовать только на главной диагонали таблицы смежности
+		//Создаем буфферную матрицы
 		for (int i = 0; i < AdjMatrix.size(); i++)
 		{
 			for (int j = 0; j < AdjMatrix.size(); j++)
@@ -222,18 +234,22 @@ public:
 
 		cout << "Starting table: " << endl << endl;
 
+		//Печатаем в консоль изначальную матрицу
 		PrintTable(BufferMatrix);
 
+		//Заходим в цикл
 		for (int v = 0; v < VertexList.size(); v++)
 		{
 			cout << "----------------------" << endl << endl;
 
+			//Граф на данный момент
 			PrintTable(BufferMatrix);
 
 			vector<int> MinElementsOfRows;
 
 			cout << endl <<"Row minimum elements:" << endl;
 
+			//Находим минимум для каждой строки
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
 				int minValue = startMinValue;
@@ -250,6 +266,7 @@ public:
 
 			cout << "Matrix after row reduction:" << endl << endl;;
 
+			//Проводим редукцию
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
 				for (int j = 0; j < BufferMatrix.size(); j++)
@@ -265,6 +282,7 @@ public:
 
 			cout << endl << endl << "Minimum column elements:" << endl;
 
+			//Находим минимумы по столбцам
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
 				int minValue = startMinValue;
@@ -280,6 +298,7 @@ public:
 				MinElemntsOfColumns.push_back(minValue);
 			}
 
+			//Проводим редукцию
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
 				for (int j = 0; j < BufferMatrix.size(); j++)
@@ -294,6 +313,7 @@ public:
 
 			vector<ZeroElement> ZeroElements;
 
+			//Находим оценку всем нулевым элементам
 			for (int i = 0; i < BufferMatrix.size(); i++)
 			{
 				for (int j = 0; j < BufferMatrix.size(); j++)
@@ -327,6 +347,7 @@ public:
 				}
 			}
 
+			//Если не нашли нулевых элементов вообще
 			if (ZeroElements.size() == 0)
 			{
 				cout << "No more zero elements, finding obvious routes" << endl;
@@ -335,6 +356,7 @@ public:
 				{
 					bool flag = false;
 
+					//Находим очевидные решения, которые потерялись в процессе редукции
 					if (result.find(VertexList[i].Data) == result.end())
 					{
 						for (int j = 0; j < VertexList.size() && !flag; j++)
@@ -361,16 +383,18 @@ public:
 					}
 				}
 			}
-			else
+			else //Иначк
 			{
 				int maxValue = -1;
 				vector<ZeroElement> maxElements;
 
 				cout << "Zero elements:" << endl;
 
+				//Печатаем все нулевые элементы в консоль
 				for (int i = 0; i < ZeroElements.size(); i++)
 					cout << ZeroElements[i].Row << " " << ZeroElements[i].Column << " " << ZeroElements[i].Value << endl;
 
+				//Находим нулевые элементы с максимальным значением
 				for (int i = 0; i < ZeroElements.size(); i++)
 				{
 					if (maxValue < ZeroElements[i].Value)
@@ -385,14 +409,16 @@ public:
 						maxElements.push_back(ZeroElements[i]);
 				}
 
-				if (maxElements.size() > 1)
+				if (maxElements.size() > 1) //Если их больше одного
 				{
 					cout << "More than one max value zero elements found, creating a turn back point for each but not the first one!" << endl;
 
+					//Создаем точку возврата
 					for (int i = 1; i < maxElements.size(); i++)
 						TurnBackPoints.push_back(TurnBackPoint<T>(BufferMatrix, maxElements[i], result, v, buffer));
 				}
 
+				//Выбираем первый из найденых нулевых элементов
 				ZeroElement maxElement = maxElements[0];
 
 				pair<T, T> to_add;
@@ -400,28 +426,30 @@ public:
 				to_add.first = VertexList[maxElement.Row].Data;
 				to_add.second = VertexList[maxElement.Column].Data;
 
+				//Закрываем элементы, которые могут привести к созданию неправильного цикла
 				for (int i = 0; i < buffer.size(); i++)
 				{
 					if (to_add.first == buffer[i].second)
 						BufferMatrix[GetVertexIndex(to_add.second)][GetVertexIndex(buffer[i].first)] = -1;
 				}
 
+				//Добавляем в буффер
 				buffer.push_back(to_add);
 
 				cout << "Result pair: " << to_add.first << " " << to_add.second << endl;
 
+				//Добавляем в итоговый маршрут
 				result[VertexList[maxElement.Row].Data] = VertexList[maxElement.Column].Data;
 
+				//Закрываем элементы в строке найденного элемента
 				for (int i = 0; i < BufferMatrix.size(); i++)
 					BufferMatrix[maxElement.Row][i] = -1;
 
-
+				//В столбце
 				for (int i = 0; i < BufferMatrix.size(); i++)
 					BufferMatrix[i][maxElement.Column] = -1;
 
-				BufferMatrix[maxElement.Row][maxElement.Column] = -1;
-				BufferMatrix[maxElement.Column][maxElement.Row] = -1;
-
+				//Закрываем обратный путь
 				BufferMatrix[maxElement.Row][maxElement.Column] = -1;
 				BufferMatrix[maxElement.Column][maxElement.Row] = -1;
 
@@ -430,14 +458,16 @@ public:
 				PrintTable(BufferMatrix);
 			}
 
-			if (v == VertexList.size() - 1)
+			if (v == VertexList.size() - 1) //Если мы находимся на псоледней итерации цикла
 			{
-				if (PathIsBad(result))
+				if (PathIsBad(result)) //Если путь плох
 				{
 					cout << "Path is found but deemed bad, returning to one of the turn back points!" << endl << endl;
 
+					//Берем последнюю точку возврата
 					TurnBackPoint<T>& point = TurnBackPoints[TurnBackPoints.size() - 1];
 
+					//Получаем из нее все данные
 					BufferMatrix = point.Matrix;
 					result = point.RecordedPath;
 					buffer = point.Buffer;
@@ -445,6 +475,8 @@ public:
 					v = point.Counter;
 
 					pair<T, T> to_add2;
+
+					//Делаем абсолютно такие же действия, как если бы обычным путем нашли бы нулевой из точки
 
 					to_add2.first = VertexList[chosenElement.Row].Data;
 					to_add2.second = VertexList[chosenElement.Column].Data;
@@ -471,21 +503,18 @@ public:
 					BufferMatrix[chosenElement.Row][chosenElement.Column] = -1;
 					BufferMatrix[chosenElement.Column][chosenElement.Row] = -1;
 
-					BufferMatrix[chosenElement.Row][chosenElement.Column] = -1;
-					BufferMatrix[chosenElement.Column][chosenElement.Row] = -1;
-
-					TurnBackPoints.pop_back();
+					TurnBackPoints.pop_back(); //Удаляем точку возврата
 
 					cout << "Matrix after full reduction: " << endl << endl;
 
 					PrintTable(BufferMatrix);
 				}
-				else
+				else //Иначе просто заканчиваем цикл
 					cout << "Path is found and deemed good!" << endl;
 			}	
 		}
 
-		return result;
+		return result; //Возвращаем результат
 	}
 
 	bool PathIsBad(map<T, T> &path) 
@@ -496,19 +525,23 @@ public:
 
 		bool result = false;
 
+		//Проходим по всему маршруту
 		for (int i = 0; i < VertexList.size() - 1 && !result; i++)
 		{
+			//Проверяем, встречался ли уже этот город
 			for (int j = 0; j < metPoints.size() && !result; j++)
 				result = metPoints[j] == current;
 
+			//Переход к следующему
 			metPoints.push_back(current);
 			current = path[current];
 		}
 
+		//Возрат флага
 		return result;
 	}
 
-	void AddEdge(T vertex1, T vertex2, int weight)
+	void AddEdge(T vertex1, T vertex2, int weight) //Метод добавления ребра в граф
 	{
 		if (weight <= 0)
 			return;
@@ -522,7 +555,7 @@ public:
 			AdjMatrix[vertex2Index][vertex1Index] = -1;
 	}
 
-	void RemoveEdge(T vertex1, T vertex2)
+	void RemoveEdge(T vertex1, T vertex2) //Метод удаления из графа ребра 
 	{
 		int vertex1Index = GetVertexIndex(vertex1);
 		int vertex2Index = GetVertexIndex(vertex2);
@@ -536,7 +569,7 @@ public:
 		}		
 	}
 
-	int GetWeight(T vertex1, T vertex2)
+	int GetWeight(T vertex1, T vertex2) //Метод получения веса ребра между двумя вершинами
 	{
 		int v1index = GetVertexIndex(vertex1);
 		int v2index = GetVertexIndex(vertex2);
@@ -544,7 +577,7 @@ public:
 		return AdjMatrix[v1index][v2index];;
 	}
 
-	void Clear()
+	void Clear() //Метод очистки графа
 	{
 		VertexList.clear();
 		AdjMatrix.clear();
@@ -552,18 +585,16 @@ public:
 
 private:
 
+	//Список элементов графа
 	vector<GraphElement<T>> VertexList;
 
+	//Матрица смежности
 	vector<vector<int>> AdjMatrix;
 
+	//Метод печати матрицы смежности в консоль
 	void PrintTable(vector<vector<int>> to_print)
 	{
-		if (VertexList.size() == 0)
-		{
-			cout << "���� ����" << endl;
-			return;
-		}
-
+		//Получаем самый длинный элемент в таблице, включая элементы графа
 		int greatestLenght = GetWidestLenght();
 
 		for (int i = 0; i < greatestLenght; i++)
@@ -600,12 +631,14 @@ private:
 		}
 	}
 
-	void RemoveVertex(T vertex)
+	void RemoveVertex(T vertex) //Метод удаления вершины из графа
 	{
 		int vIndex = GetVertexIndex(vertex);
 
+		//Буфер вершин
 		vector<GraphElement<T>> VertexBuffer;
 
+		//Переносим в него все вершины, кроме удаляемой
 		for (int i = 0; i < VertexList.size(); i++)
 		{
 			if (VertexList[i].Data != vertex)
@@ -614,12 +647,13 @@ private:
 
 		int oldSize = VertexList.size();
 
+		//Задаем основному списку новые элементы
 		VertexList.clear();
-
 		VertexList = VertexBuffer;
 
 		int currentSize = VertexList.size();
 
+		//Буфер ребер
 		vector<vector<int>> EdgesBuffer = AdjMatrix;
 
 		AdjMatrix.clear();
@@ -628,6 +662,7 @@ private:
 
 		int ColumnOffset = 0;
 
+		//Переносим в матрицу основную матрицу нужные значения
 		for (int i = 0; i < currentSize; i++)
 		{
 			if (i == vIndex)
@@ -645,6 +680,7 @@ private:
 		}
 	}
 
+	//Метод рисования вершины
 	void DrawVertex(RenderWindow &window, GraphElement<T> &Vertex, vector<T> &choosenElements) 
 	{
 		sf::Text text;
@@ -674,36 +710,43 @@ private:
 		window.draw(Vertex.visualVertex);
 		window.draw(text);
 	}
-
+	
+	//Метод рисования ребра
 	void DrawEdge(RenderWindow& window, GraphElement<T> Vertex1, GraphElement<T> Vertex2, int weight)
 	{
 		if (weight == 0 || weight == -1)
 			return;
 
+		//Расчет точки соприкосновения с линией для первого элемента
 		Vector2f boundaryForVertex1 =
 			CalculateBoundaryPoint(Vertex2.visualVertex.getPosition(), Vertex1.visualVertex.getPosition(), 22)
 			+ Vector2f(VertexRadius, VertexRadius);
 
+		//Для второго
 		Vector2f boundaryForVertex2 =
 			CalculateBoundaryPoint(Vertex1.visualVertex.getPosition(), Vertex2.visualVertex.getPosition(), 22)
 			+ Vector2f(VertexRadius, VertexRadius);
 
 		VertexArray Edge(Lines, 2);
 
+		//Рисуем линии
 		Edge[0] = boundaryForVertex1;
 		Edge[1] = boundaryForVertex2;
 
 		Edge[0].color = Color::Black;
 		Edge[1].color = Color::Black;
 
+		//Расчитываем местопложение содержимого ребра
 		Vector2f weightTextPosition = CalculateBoundaryPoint(boundaryForVertex1, boundaryForVertex2, 
 			sqrt(pow(boundaryForVertex2.x - boundaryForVertex1.x, 2) + pow(boundaryForVertex2.y - boundaryForVertex1.y, 2)) 
 			/ 4);
 
 		Font font;
 
+		//Загрузка шрифта
 		font.loadFromFile("CyrilicOld.TTF");
 
+		//Настройка текста
 		sf::Text text;
 		text.setFont(font);
 		text.setString(to_string(weight));
@@ -715,8 +758,10 @@ private:
 		text.setOrigin(textRect.left + textRect.width / 2.0f, textRect.top + textRect.height / 2.0f);
 		text.setPosition(weightTextPosition);
 
+		//Стрелка ребра
 		VertexArray triangleArrow(Triangles, 3);
 
+		//Получение угла, под которым должна быть повернута стрелка
 		double angle = GetAngle(boundaryForVertex2, boundaryForVertex1, Vector2f(boundaryForVertex2.x, boundaryForVertex2.y + 20));
 
 		if (boundaryForVertex1.x > boundaryForVertex2.x)
@@ -725,8 +770,11 @@ private:
 		Transform rotation;
 		rotation.rotate(angle, boundaryForVertex2);
 
+		//Точки B и C треугольника
 		Vector2f pointB = Vector2f(boundaryForVertex2.x - 10, boundaryForVertex2.y + 12);
 		Vector2f pointC = Vector2f(boundaryForVertex2.x + 10, boundaryForVertex2.y + 12);
+
+		//Рисуем триугольную стрелку
 
 		triangleArrow[0] = boundaryForVertex2;
 		triangleArrow[1] = rotation.transformPoint(pointB);
@@ -741,26 +789,23 @@ private:
 		window.draw(Edge);
 	}
 
-	double GetAngle(Vector2f &A, Vector2f &B, Vector2f &C)
+	double GetAngle(Vector2f &A, Vector2f &B, Vector2f &C) //Метод рассчета угла
 	{
-		//A - boundary2
-		//B - boundary1
-		//C - boundaty2, но сдвиг по y на 20 вниз
+		double AB = GetSideLenght(A, B); //Длина стороны AB
 
-		double AB = GetSideLenght(A, B);
+		double AC = GetSideLenght(A, C); //Длина стороны AC
 
-		double AC = GetSideLenght(A, C);
+		double BC = GetSideLenght(B, C); //Длина стороны BC
 
-		double BC = GetSideLenght(B, C);
-
-		return acos((AB * AB + AC * AC - BC * BC) / (2 * AB * AC)) * 180/PI;
+		return acos((AB * AB + AC * AC - BC * BC) / (2 * AB * AC)) * 180/PI; //Возращаем угл
 	}
 
-	double GetSideLenght(Vector2f &point1, Vector2f &point2)
+	double GetSideLenght(Vector2f &point1, Vector2f &point2) //Метод нахождения длины между двумя точками
 	{
 		return sqrt(pow(point2.x - point1.x, 2) + pow(point2.y - point1.y, 2));
 	}
 
+	//Метод для рассчета точки соприкосновения между вершиной и ребром
 	Vector2f CalculateBoundaryPoint(Vector2f point1, Vector2f point2, double minus)
 	{
 		double Lenght = GetEdgeLenght(point1, point2) - minus;
@@ -770,6 +815,7 @@ private:
 		return Vector2f(point1.x + Lenght * cos(a), point1.y + Lenght * sin(a));
 	}
 
+	//Метод для рассчета длины ребра
 	double GetEdgeLenght(Vector2f &point1, Vector2f &point2)
 	{
 		double DistanceX = point2.x - point1.x;
@@ -778,6 +824,7 @@ private:
 		return sqrt(DistanceX * DistanceX + DistanceY * DistanceY);
 	}
 
+	//Метод для получния индекса вершины
 	int GetVertexIndex(T vertex)
 	{
 		int result = -1;
@@ -791,6 +838,7 @@ private:
 		return result;
 	}
 
+	//Метод для нахождения самого длинного элемента в матрице графа
 	int GetWidestLenght()
 	{
 		int result = 0;
@@ -817,6 +865,7 @@ private:
 		return result;
 	}
 
+	//Метод печати элемент в консоль
 	void PrintWithSpaces(string element, int maxLenght)
 	{
 		cout << element;
@@ -825,6 +874,7 @@ private:
 			cout << " ";
 	}
 
+	//Метод печати разделяющей линии
 	void PrintDivideLine(int Lenght)
 	{
 		cout << endl;

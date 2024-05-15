@@ -8,9 +8,10 @@
 using namespace sf;
 using namespace std;
 
-class SFMLButton
+class SFMLButton //Класс кнопки
 {
 public:
+	//Конструктор кнопки
 	SFMLButton(RectangleShape &shape, Vector2f position, string text, WorkMode mode, RenderWindow &window) 
 	{
 		Shape.setSize(shape.getSize());
@@ -39,6 +40,7 @@ public:
 		Mode = mode;
 	};
 
+	//Статический метод создания кнопок программы
 	static void SetUpButtons(float X, float startY, float YDyff, vector<SFMLButton>& AddTo, RenderWindow &window, 
 		int activeButtonIndex)
 	{
@@ -90,11 +92,13 @@ public:
 		}
 	}
 
+	//Метод для получения фигуры кнопки
 	RectangleShape& getShape()
 	{
 		return Shape;
 	}
 
+	//Метод для получения режима кнопки
 	WorkMode GetWorkMode()
 	{
 		return Mode;
@@ -102,7 +106,7 @@ public:
 
 private:
 
-	WorkMode Mode;
+	WorkMode Mode; //Режим работы кнопки
 
-	RectangleShape Shape;
+	RectangleShape Shape; //Фигура кнопки
 };

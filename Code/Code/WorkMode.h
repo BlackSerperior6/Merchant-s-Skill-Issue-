@@ -1,6 +1,6 @@
 #pragma once
 
-enum WorkMode
+enum WorkMode //Enum, содержащий в себе режимы работы программы
 {
 	CreateVertex,
 	DestroyVertex,
