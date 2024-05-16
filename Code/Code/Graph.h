@@ -69,7 +69,7 @@ struct GraphElement //Структура элемента графа
 {
 	CircleShape visualVertex; //Визуальная часть элемента графа
 	
-	T Data; //Фактические данные
+	T Data; //Данные
 };
 
 template <typename T>
@@ -77,7 +77,7 @@ class Graph
 {
 public:
 
-	void DrawGraph(RenderWindow &window, vector<string> &choosenElements) //Метод рисования графа
+	void DrawGraph(RenderWindow &window, vector<T> &choosenElements) //Метод рисования графа
 	{
 
 		for (int i = 0; i < VertexList.size(); i++)
@@ -90,7 +90,7 @@ public:
 		}
 	}
 
-	void TryRemoveVertexByCoordinates(Vector2i coords) //Метод удаления вершины по координатам
+	void TryRemoveVertexByCoordinates(Vector2i &coords) //Метод удаления вершины по координатам
 	{
 		T item;
 		bool flag = false;
@@ -386,7 +386,7 @@ public:
 					}
 				}
 			}
-			else //Иначк
+			else //Иначе
 			{
 				int maxValue = -1;
 				vector<ZeroElement> maxElements;
@@ -520,30 +520,6 @@ public:
 		return result; //Возвращаем результат
 	}
 
-	bool PathIsBad(map<T, T> &path) 
-	{
-		vector<T> metPoints;
-
-		T current = VertexList[0].Data;
-
-		bool result = false;
-
-		//Проходим по всему маршруту
-		for (int i = 0; i < VertexList.size() - 1 && !result; i++)
-		{
-			//Проверяем, встречался ли уже этот город
-			for (int j = 0; j < metPoints.size() && !result; j++)
-				result = metPoints[j] == current;
-
-			//Переход к следующему
-			metPoints.push_back(current);
-			current = path[current];
-		}
-
-		//Возрат флага
-		return result;
-	}
-
 	void AddEdge(T vertex1, T vertex2, int weight) //Метод добавления ребра в граф
 	{
 		if (weight <= 0)
@@ -593,6 +569,30 @@ private:
 
 	//Матрица смежности
 	vector<vector<int>> AdjMatrix;
+
+	bool PathIsBad(map<T, T>& path)
+	{
+		vector<T> metPoints;
+
+		T current = VertexList[0].Data;
+
+		bool result = false;
+
+		//Проходим по всему маршруту
+		for (int i = 0; i < VertexList.size() - 1 && !result; i++)
+		{
+			//Проверяем, встречался ли уже этот город
+			for (int j = 0; j < metPoints.size() && !result; j++)
+				result = metPoints[j] == current;
+
+			//Переход к следующему
+			metPoints.push_back(current);
+			current = path[current];
+		}
+
+		//Возрат флага
+		return result;
+	}
 
 	//Метод печати матрицы смежности в консоль
 	void PrintTable(vector<vector<int>> to_print)
@@ -715,7 +715,7 @@ private:
 	}
 	
 	//Метод рисования ребра
-	void DrawEdge(RenderWindow& window, GraphElement<T> Vertex1, GraphElement<T> Vertex2, int weight)
+	void DrawEdge(RenderWindow& window, GraphElement<T> &Vertex1, GraphElement<T> &Vertex2, int weight)
 	{
 		if (weight == 0 || weight == -1)
 			return;
@@ -800,7 +800,7 @@ private:
 
 		double BC = GetSideLenght(B, C); //Длина стороны BC
 
-		return acos((AB * AB + AC * AC - BC * BC) / (2 * AB * AC)) * 180/PI; //Возращаем угл
+		return acos((AB * AB + AC * AC - BC * BC) / (2 * AB * AC)) * 180/PI; //Возвращаем угл
 	}
 
 	double GetSideLenght(Vector2f &point1, Vector2f &point2) //Метод нахождения длины между двумя точками
@@ -811,20 +811,11 @@ private:
 	//Метод для рассчета точки соприкосновения между вершиной и ребром
 	Vector2f CalculateBoundaryPoint(Vector2f point1, Vector2f point2, double minus)
 	{
-		double Lenght = GetEdgeLenght(point1, point2) - minus;
+		double Lenght = GetSideLenght(point1, point2) - minus;
 
 		double a = atan2(point2.y - point1.y, point2.x - point1.x);
 
 		return Vector2f(point1.x + Lenght * cos(a), point1.y + Lenght * sin(a));
-	}
-
-	//Метод для рассчета длины ребра
-	double GetEdgeLenght(Vector2f &point1, Vector2f &point2)
-	{
-		double DistanceX = point2.x - point1.x;
-		double DistanceY = point2.y - point1.y;
-
-		return sqrt(DistanceX * DistanceX + DistanceY * DistanceY);
 	}
 
 	//Метод для получния индекса вершины
