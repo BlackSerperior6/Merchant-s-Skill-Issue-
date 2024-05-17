@@ -463,7 +463,7 @@ public:
 
 			if (v == VertexList.size() - 1) //Если мы находимся на псоледней итерации цикла
 			{
-				if (PathIsBad(result)) //Если путь плох
+				if (CheckInvalid(result)) //Если путь плох
 				{
 					cout << "Path is found but deemed bad, returning to one of the turn back points!" << endl << endl;
 
@@ -570,7 +570,7 @@ private:
 	//Матрица смежности
 	vector<vector<int>> AdjMatrix;
 
-	bool PathIsBad(map<T, T>& path)
+	bool CheckInvalid(map<T, T>& path)
 	{
 		vector<T> metPoints;
 
