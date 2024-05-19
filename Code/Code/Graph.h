@@ -18,7 +18,7 @@ const int startMinValue = 10000; //Недостижимый минимум
 
 struct ZeroElement //Структура, олицетворяющая собой нулевой элемент
 {
-	int Row; //Ряд жлемента
+	int Row; //Ряд элемента
 	int Column; //Столбец элемента
 	int Value; //Оценка элемента
 
