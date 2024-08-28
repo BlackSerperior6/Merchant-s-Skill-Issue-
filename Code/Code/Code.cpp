@@ -1,8 +1,6 @@
-﻿#include "pch.h"
-#include "Graph.h"
+﻿#include "Graph.h"
 #include "SFMLButton.h"
 
-using namespace System;
 using namespace sf;
 using namespace std;
 
@@ -25,7 +23,7 @@ int GetValueFromDialog()
 	string currentText = "";
 
 	Font font;
-	font.loadFromFile("CyrilicOld.TTF");
+	font.loadFromFile("Roboto-Light.ttf");
 
 	while (dialogWindow.isOpen())
 	{
@@ -39,7 +37,7 @@ int GetValueFromDialog()
 
 		sf::Text text;
 
-		text.setString(currentText.length() == 0 ? "Введите длину пути" : currentText + "_");
+		text.setString(currentText.length() == 0 ? "Enter lenght" : currentText + "_");
 		text.setFillColor(Color::Black);
 		text.setOutlineColor(Color::White);
 		text.setCharacterSize(15);
@@ -131,10 +129,8 @@ int GetValueFromDialog()
 	return stoi(currentText);
 }
 
-int main(cli::array<System::String ^> ^args)
+int main()
 {
-	setlocale(LC_ALL, "RUS");
-
 	WorkMode mode = WorkMode::None;
 
 	vector<SFMLButton> Buttons;
@@ -227,7 +223,7 @@ int main(cli::array<System::String ^> ^args)
 
 							if (functionalCanvas.getGlobalBounds().contains(mousePosition.x, mousePosition.y)) 
 							{
-								content = "Г" + to_string(counter++); //Вершина генерируется сама
+								content = "A" + to_string(counter++); //Вершина генерируется сама
 								mainGraph.AddVertex(content, mousePosition);
 							}
 							
@@ -272,12 +268,12 @@ int main(cli::array<System::String ^> ^args)
 							{
 								sf::Text errMessage;
 
-								errMessage.setString("Невозможно решить задачу при таких условиях!");
+								errMessage.setString("Cannot solve issue!");
 								errMessage.setFillColor(Color::Black);
 								errMessage.setOutlineColor(Color::White);
 
 								Font font;
-								font.loadFromFile("CyrilicOld.TTF");
+								font.loadFromFile("Roboto-Light.ttf");
 
 								errMessage.setFont(font);
 								errMessage.setPosition(50, 30);
@@ -326,7 +322,7 @@ int main(cli::array<System::String ^> ^args)
 								visualText.setOutlineColor(Color::White);
 
 								Font font;
-								font.loadFromFile("CyrilicOld.TTF");
+								font.loadFromFile("Roboto-Light.ttf");
 
 								visualText.setFont(font);
 								visualText.setPosition(50, 30);
@@ -334,7 +330,7 @@ int main(cli::array<System::String ^> ^args)
 
 								RenderWindow ResultWindow(VideoMode(result.length() * 30, 158), "Result!");
 
-								visualText.setString(result + "\n\n" + "Длина пути: " + to_string(totalDistance));
+								visualText.setString(result + "\n\n" + "Lenght: " + to_string(totalDistance));
 
 								while (ResultWindow.isOpen())
 								{

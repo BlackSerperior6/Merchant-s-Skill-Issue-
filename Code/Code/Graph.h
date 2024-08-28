@@ -1,9 +1,12 @@
 #pragma once
+#pragma GCC optimize "permissive"
+
 #include <iostream>
 #include <vector>
 #include <map>
 #include <string>
 #include <queue>
+#include <cmath>
 
 #define PI 3.14159265 // Константа, выражающая собой число Pi
 
@@ -689,7 +692,7 @@ private:
 		sf::Text text;
 		Font font;
 
-		font.loadFromFile("CyrilicOld.TTF");
+		font.loadFromFile("Roboto-Light.ttf");
 
 		//Настройка текста
 		text.setString(Vertex.Data);
@@ -747,7 +750,7 @@ private:
 		Font font;
 
 		//Загрузка шрифта
-		font.loadFromFile("CyrilicOld.TTF");
+		font.loadFromFile("Roboto-Light.ttf");
 
 		//Настройка текста
 		sf::Text text;
@@ -792,7 +795,7 @@ private:
 		window.draw(Edge);
 	}
 
-	double GetAngle(Vector2f &A, Vector2f &B, Vector2f &C) //Метод рассчета угла
+	double GetAngle(Vector2f A, Vector2f B, Vector2f C) //Метод рассчета угла
 	{
 		double AB = GetSideLenght(A, B); //Длина стороны AB
 

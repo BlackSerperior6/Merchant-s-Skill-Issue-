@@ -8,10 +8,10 @@
 using namespace sf;
 using namespace std;
 
-class SFMLButton //Класс кнопки
+class SFMLButton //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 {
 public:
-	//Конструктор кнопки
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	SFMLButton(RectangleShape &shape, Vector2f position, string text, WorkMode mode, RenderWindow &window) 
 	{
 		Shape.setSize(shape.getSize());
@@ -25,7 +25,7 @@ public:
 		sf::Text line;
 		Font font;
 
-		font.loadFromFile("CyrilicOld.TTF");
+		font.loadFromFile("Roboto-Light.ttf");
 		line.setFont(font);
 
 		line.setString(text);
@@ -40,7 +40,7 @@ public:
 		Mode = mode;
 	};
 
-	//Статический метод создания кнопок программы
+	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 	static void SetUpButtons(float X, float startY, float YDyff, vector<SFMLButton>& AddTo, RenderWindow &window, 
 		int activeButtonIndex)
 	{
@@ -56,27 +56,27 @@ public:
 			switch (i)
 			{
 			case 0:
-				text = "Добавить вершину";
+				text = "Create Vertex";
 				mode = WorkMode::CreateVertex;
 				break;
 			case 1:
-				text = "Удалить вершину";
+				text = "Detroy Vertex";
 				mode = WorkMode::DestroyVertex;
 				break;
 			case 2:
-				text = "Подвинуть вершину";
+				text = "Move Vertex";
 				mode = WorkMode::MoveVertex;
 				break;
 			case 3:
-				text = "Добавить ребро";
+				text = "Create Edge";
 				mode = WorkMode::CreateEdge;
 				break;
 			case 4:
-				text = "Удалить ребро";
+				text = "Detroy Edge";
 				mode = WorkMode::DestroyEdge;
 				break;
 			case 5:
-				text = "Решить задачу";
+				text = "Solve";
 				mode = WorkMode::MerchantProblem;
 				break;
 			default:
@@ -92,13 +92,13 @@ public:
 		}
 	}
 
-	//Метод для получения фигуры кнопки
+	//пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	RectangleShape& getShape()
 	{
 		return Shape;
 	}
 
-	//Метод для получения режима кнопки
+	//пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 	WorkMode GetWorkMode()
 	{
 		return Mode;
@@ -106,7 +106,7 @@ public:
 
 private:
 
-	WorkMode Mode; //Режим работы кнопки
+	WorkMode Mode; //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 
-	RectangleShape Shape; //Фигура кнопки
+	RectangleShape Shape; //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 };
